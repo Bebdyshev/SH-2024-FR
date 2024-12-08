@@ -1,4 +1,4 @@
-# Seculert - Security Hackathon by Terricon Valley
+# Sec👮🏿lert - Security Hackathon by Terricon Valley
 
 ## Installation
 
