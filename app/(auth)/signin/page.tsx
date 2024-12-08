@@ -30,7 +30,7 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const typingPhrases = ["Сервис для мониторинга за успеваемостью учеников"];
+  const typingPhrases = ["Сервис для мониторинга уязвимостей", "Сервис для мониторинга эксплоитов"];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -92,26 +92,20 @@ export default function SignIn() {
           <div className="absolute inset-0">
             <Image
               className="object-cover"
-              src="https://i.ibb.co.com/wCbTfHw/preview.png"
+              src="https://i.pinimg.com/736x/3d/a9/d1/3da9d194ffea8e8608916396bedad17a.jpg"
               alt="Green abstract"
               fill
               style={{ objectFit: "cover" }}
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50 max-h-screen"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-40 max-h-screen"></div>
           <div className="relative">
-            <div className="w-full xl:w-full xl:mx-auto xl:pr-24 xl:max-w-xl">
+            <div className="w-full ">
               <h1 className="flex justify-start text-6xl md:text-6xl text-white font-bold">
-                Sploitus Defender
-              </h1> <br/>
-              <div className="flex justify-start md:text-xl text-white">
-                  <TypeAnimation
-                  sequence={typingPhrases.flatMap((phrase) => [phrase, 2000])}
-                  wrapper="span"
-                  speed={50}
-                  className="text-3xl text-white text-center md:text-left"
-                  repeat={Infinity}
-                />
+                Seculert
+              </h1>
+              <div className="flex justify-start text-white text-3xl text-white text-center md:text-left w-full">
+              Сервис для мониторинга уязвимостей
                 <h3 className="text-6xl font-bold text-white"></h3>
               </div>
             </div>
@@ -121,7 +115,7 @@ export default function SignIn() {
         <div className="flex items-center justify-center px-4 py-10 bg-white sm:px-6 lg:px-8 sm:py-16 lg:py-24 h-screen">
           <div className="xl:w-full xl:max-w-sm 2xl:max-w-md xl:mx-auto">
             <h2 className="text-3xl font-bold leading-tight text-black sm:text-4xl">
-              Sign in to USP
+              Sign in to Seculert
             </h2>
             <form onSubmit={isLogin ? handleLogin : handleSignUp} className="mt-8 space-y-5">
               {error && <p className="text-red-500">{error}</p>}

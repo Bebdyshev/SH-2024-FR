@@ -101,7 +101,7 @@ export default function AppSidebar({
               <company.logo className="size-5" />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">Sploitus Defender</span>
+              <span className="truncate font-semibold">Seculert</span>
               <span className="truncate text-xs">{userInfo.email}</span>
             </div>
           </div>
