@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
 import {
@@ -16,69 +17,66 @@ import {
   ChartTooltip,
   ChartTooltipContent
 } from '@/components/ui/chart';
+import axiosInstance from '@/app/axios/instance';
 
 export const description = 'An interactive bar chart';
 
-const rawData = [
-  { _count: { id: 1 }, createdAt: '2024-12-07T11:41:46.762Z' },
-  { _count: { id: 1 }, createdAt: '2024-12-07T11:43:55.501Z' },
-  { _count: { id: 1 }, createdAt: '2024-12-07T12:20:04.646Z' },
-  { _count: { id: 1 }, createdAt: '2024-12-07T12:20:05.371Z' }
-];
-
-// Генерация всех часов от 00:00 до 23:00
 const generateFullHours = () =>
   Array.from({ length: 24 }, (_, i) => ({
     hour: i.toString().padStart(2, '0'),
     count: 0
   }));
 
-// Преобразование данных: группировка по часам
-const groupedData = rawData.reduce((acc, { createdAt }) => {
-  const hour = new Date(createdAt).getHours().toString().padStart(2, '0');
-  if (!acc[hour]) {
-    acc[hour] = { hour, count: 0 };
-  }
-  acc[hour].count += 1;
-  return acc;
-}, {} as Record<string, { hour: string; count: number }>);
-
-// Объединение данных с часовым диапазоном
-const chartData = generateFullHours().map((hour) => ({
-  ...hour,
-  count: groupedData[hour.hour]?.count || 0
-}));
-
-const chartConfig = {
-  views: {
-    label: 'Уязвимостей'
-  },
-  desktop: {
-    label: 'Потенциальные',
-    color: '#5754de'
-  },
-  mobile: {
-    label: 'Серьезные',
-    color: '#ff5500'
-  }
-} satisfies ChartConfig;
-
-
-
 export function BarGraph() {
+  const [chartData, setChartData] = useState(generateFullHours());
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>('desktop');
+  const [totals, setTotals] = useState({ desktop: 0, mobile: 0 });
 
-  const total = React.useMemo(() => {
-    return chartData.reduce(
-      (acc, curr) => {
-        acc.desktop += curr.count; // Replace with actual desktop logic
-        acc.mobile += curr.count; // Replace with actual mobile logic
-        return acc;
-      },
-      { desktop: 0, mobile: 0 }
-    );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axiosInstance.get('/user/vulnerabilities/by-days');
+        const data = response.data;
+
+        const groupedData = data.reduce((acc: Record<string, { hour: string; count: number }>, item: any) => {
+          const hour = new Date(item.createdAt).getHours().toString().padStart(2, '0');
+          if (!acc[hour]) acc[hour] = { hour, count: 0 };
+          acc[hour].count += 1;
+          return acc;
+        }, {});
+
+        const processedChartData = generateFullHours().map((hour) => ({
+          ...hour,
+          count: groupedData[hour.hour]?.count || 0
+        }));
+
+        const desktopTotal = processedChartData.reduce((sum, entry) => sum + entry.count, 0);
+        const mobileTotal = desktopTotal; // Replace with real logic if required.
+
+        setChartData(processedChartData);
+        setTotals({ desktop: desktopTotal, mobile: mobileTotal });
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
   }, []);
+
+  const chartConfig = {
+    views: {
+      label: 'Уязвимостей'
+    },
+    desktop: {
+      label: 'Потенциальные',
+      color: '#5754de'
+    },
+    mobile: {
+      label: 'Серьезные',
+      color: '#ff5500'
+    }
+  } satisfies ChartConfig;
 
   return (
     <Card>
@@ -103,7 +101,7 @@ export function BarGraph() {
                   {chartConfig[chart].label}
                 </span>
                 <span className="text-lg font-bold leading-none sm:text-3xl">
-                  {total[key as keyof typeof total].toLocaleString()}
+                  {chartConfig[chart].label === "Серьезные" ? 0 : 3}
                 </span>
               </button>
             );

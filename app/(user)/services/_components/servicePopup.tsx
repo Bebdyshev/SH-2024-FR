@@ -57,25 +57,25 @@ export const ServicePopup: React.FC<ServicePopupProps> = ({ data, onClose }) => 
           
           {/* Display the verdict */}
           <div className="mb-4">
-            <strong>Verdict: </strong>
+            <strong>Вердикт: </strong>
             <span>{data?.verdict}</span>
           </div>
 
           {/* Display service domain */}
           <div className="mb-4">
-            <strong>Service Domain: </strong>
+            <strong>Домен сервиса: </strong>
             <span>{data?.service?.domain}</span>
           </div>
 
           {/* Display agent status */}
           <div className="mb-4">
-            <strong>Agent Status: </strong>
+            <strong>Статус агента: </strong>
             <span>{data?.agent?.status}</span>
           </div>
 
           {/* Display creation date */}
           <div className="mb-4">
-            <strong>Created At: </strong>
+            <strong>Время создания: </strong>
             <span>{data?.createdAt}</span>
           </div>
 

@@ -88,18 +88,18 @@ export default function OverViewPage() {
       <table className="min-w-full table-auto mt-4 bg-white">
         <thead>
           <tr>
-            <th className="border px-4 py-2">Exploit Title</th>
-            <th className="border px-4 py-2">Verdict</th>
-            <th className="border px-4 py-2">Service Domain</th>
-            <th className="border px-4 py-2">Agent Status</th>
-            <th className="border px-4 py-2">Created Date</th>
+            <th className="border px-4 py-2">Экслпоит</th>
+            <th className="border px-4 py-2">Вердикт</th>
+            <th className="border px-4 py-2">Домен сервиса</th>
+            <th className="border px-4 py-2">Статус</th>
+            <th className="border px-4 py-2">Время создания</th>
           </tr>
         </thead>
         <tbody>
           {data?.map((item: any) => (
             <tr
               key={item.id}
-              className={getRowColor(item.verdict) + ' transition-colors duration-100 ease-in-out'}
+              className={getRowColor(item.verdict) + ' transition-colors ease-in-out cursor-pointer'}
               onClick={() => openPopup(item)}
             >
               <td className="border px-4 py-2">{item.exploit.title}</td>
