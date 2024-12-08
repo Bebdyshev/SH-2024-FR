@@ -35,7 +35,8 @@ import {
   Mail,
   Rss,
   X,
-  ShieldQuestion
+  ShieldQuestion,
+  History
 } from 'lucide-react';
 export type Icon = LucideIcon;
 
@@ -73,6 +74,7 @@ export const Icons = {
   mail: Mail,
   website: Rss,
   exploit: ShieldQuestion,
+  history: History,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

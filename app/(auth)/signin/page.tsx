@@ -18,7 +18,7 @@ import { TypeAnimation } from "react-type-animation";
 const commonStyles = {
   inputIcon: "absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none",
   input: "block w-full py-4 pl-10 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-[#16a07c] focus:bg-white caret-blue-600",
-  button: "inline-flex items-center justify-center w-full px-4 py-4 text-base font-semibold text-white transition-all duration-200 border border-transparent rounded-md bg-gradient-to-r from-[#15bbe3] to-[#1d73b1] focus:outline-none hover:opacity-80 focus:opacity-80",
+  button: "inline-flex items-center justify-center w-full px-4 py-4 text-base font-semibold text-white transition-all duration-200 border border-transparent rounded-md bg-[#5754de] focus:outline-none hover:opacity-80 focus:opacity-80",
   socialButton: "relative inline-flex items-center justify-center w-full px-4 py-4 text-base font-semibold text-gray-700 transition-all duration-200 bg-white border-2 border-gray-200 rounded-md hover:bg-gray-100 focus:bg-gray-100 hover:text-black focus:text-black focus:outline-none",
   link: "font-medium text-blue-600 transition-all duration-200 hover:text-blue-700 focus:text-blue-700 hover:underline",
 };
@@ -52,7 +52,7 @@ export default function SignIn() {
       const token = resp.data.accessToken; 
       localStorage.setItem('access_token', token);
       toast("Login successful");
-      router.push("/dashboard/students");
+      router.push("/dashboard");
     } catch (err) {
       console.error('Error logging in:', err);
       toast("Login failed");
@@ -98,11 +98,11 @@ export default function SignIn() {
               style={{ objectFit: "cover" }}
             />
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70 max-h-screen"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50 max-h-screen"></div>
           <div className="relative">
             <div className="w-full xl:w-full xl:mx-auto xl:pr-24 xl:max-w-xl">
               <h1 className="flex justify-start text-6xl md:text-6xl text-white font-bold">
-                Unified Student Profile
+                Sploitus Defender
               </h1> <br/>
               <div className="flex justify-start md:text-xl text-white">
                   <TypeAnimation

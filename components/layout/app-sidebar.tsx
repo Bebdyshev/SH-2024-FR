@@ -66,13 +66,13 @@ export default function AppSidebar({
 }: {
   children: React.ReactNode;
 }) {
-  const [userInfo, setUserInfo] = useState<{ company_name: string; name: string}>({"company_name": "Freedom", "name": "Berdyshev Kerey"});
+  const [userInfo, setUserInfo] = useState<{ email: string; password: string}>({"email": "Freedom", "password": "Berdyshev Kerey"});
 
   useEffect(() => {
     async function fetchUserInfo() {
       try {
-        const response = await axiosInstance.get('/users/me'); // Adjust the endpoint as needed
-        setUserInfo(response.data);
+        const response = await axiosInstance.get('/user/me'); // Adjust the endpoint as needed
+        setUserInfo(response.data.user); // Add the name field
       } catch (error) {
         console.error('Failed to fetch user information:', error);
       }
@@ -101,8 +101,8 @@ export default function AppSidebar({
               <company.logo className="size-5" />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">Unified Student Profile</span>
-              <span className="truncate text-xs">{userInfo.name}</span>
+              <span className="truncate font-semibold">Sploitus Defender</span>
+              <span className="truncate text-xs">{userInfo.email}</span>
             </div>
           </div>
         </SidebarHeader>
@@ -182,13 +182,13 @@ export default function AppSidebar({
                         alt={''}
                       />
                       <AvatarFallback className="rounded-lg">
-                        <img src={"https://avatar.iran.liara.run/username?username=" + userInfo.name}></img>
+                        <img src={"https://avatar.iran.liara.run/username?username=" + userInfo.email}></img>
                         {/* ДОБАВИТЬ */}
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="truncate font-semibold">
-                        {userInfo.name}
+                        {userInfo.email}
                       </span>
                     </div>
                     <ChevronsUpDown className="ml-auto size-4" />

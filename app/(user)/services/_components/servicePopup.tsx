@@ -1,17 +1,43 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Service } from '@/constants/data';
-import { AreaChart } from './area-graph';
+import { TypingAnimation } from '@/components/ui/typing-animation';
 
 interface ServicePopupProps {
-  data: Service;
+  data: any; // Assuming 'data' will be an object containing the report's details
   onClose: () => void;
 }
 
 export const ServicePopup: React.FC<ServicePopupProps> = ({ data, onClose }) => {
+  const [history, setHistory] = useState<any>(null); // State to store the report history
+  const [currentIndex, setCurrentIndex] = useState<number>(0); // Track current entry being typed
+  const reportId = data?.id; // Assuming the reportId is available in the 'data' prop
+  
+  useEffect(() => {
+    // Fetch the history data when the component mounts
+    const fetchReportHistory = async () => {
+      try {
+        const response = await fetch(`http://20.64.237.199:4000/user/reports/${reportId}/history`);
+        if (response.ok) {
+          const historyData = await response.json();
+          setHistory(historyData); // Store the fetched history data
+        } else {
+          console.error('Failed to fetch report history');
+        }
+      } catch (error) {
+        console.error('Error fetching report history:', error);
+      }
+    };
+
+    if (reportId) {
+      fetchReportHistory();
+    }
+  }, [reportId]); // Only refetch if reportId changes
+
+  console.log(history);
+
   return (
     <div
       className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40"
@@ -26,69 +52,87 @@ export const ServicePopup: React.FC<ServicePopupProps> = ({ data, onClose }) => 
         transition={{ duration: 0.05 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 pb-2 border-b flex">
-          <h2 className="text-[25px] font-bold">{data.domain}</h2>
-          <p className="text-[25px] ml-auto">{data.ipAddress}</p>
-        </div>
-        <div className="p-6 pb-2">
-          {/* Статус */}
-          <div className="mb-4 flex">
-            <div>
-              <p className="text-lg font-medium">Статус:</p>
-              <p
-                className={`text-[17px] ${
-                  data.status === 'Активен'
-                    ? 'text-green-500'
-                    : data.status === 'Неактивен'
-                    ? 'text-red-500'
-                    : 'text-gray-500'
-                }`}
-              >
-                {data.status}
-              </p>
-            </div>
-            <div className='ml-auto pl-5'>
-              <p className="text-lg font-medium">Последняя проверка:</p>
-              <p className="text-[17px] text-gray-500">{data.lastUpdated}</p>
-            </div>
-          </div>
-
-          {/* Информация о сервисе */}
-          <div className="mb-4 rounded overflow-hidden">
-          <table className="table-auto w-full text-black border overflow-hidden">
-            <thead className='border'>
-              <tr>
-                <th className="px-4 py-2 text-left border">Тип уязвимости</th>
-                <th className="px-4 py-2 text-left border">Количество</th>
-              </tr>
-            </thead>
-            <tbody className='border'>
-              <tr className='border'>
-                <td className="px-4 py-2 border">Потенциальные уязвимости</td>
-                <td className="px-4 py-2">{data.vulnerability.potential}</td>
-              </tr>
-              <tr className='border'> 
-                <td className="px-4 py-2 border">Реальные уязвимости</td>
-                <td className="px-4 py-2">{data.vulnerability.real}</td>
-              </tr>
-              <tr className='border'>
-                <td className="px-4 py-2 border">Общие уязвимости</td>
-                <td className="px-4 py-2">{data.vulnerability.total}</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
-
-          {/* Оценка уязвимости */}
+        <div className="p-6 flex flex-col">
+          <h2 className="text-xl font-bold mb-4">{data?.exploit?.title}</h2>
+          
+          {/* Display the verdict */}
           <div className="mb-4">
-            <p className="text-lg font-medium">Оценка: {data.vulnerability.total > 5 ? 'Высокая уязвимость' : data.vulnerability.total > 2 ? 'Средняя уязвимость' : 'Низкая уязвимость'}</p>
+            <strong>Verdict: </strong>
+            <span>{data?.verdict}</span>
           </div>
-        </div>
 
-        <div className="mt-auto flex justify-end space-x-2 p-6 ">
-          <Button className="w-full bg-gray-400 hover:bg-[#9ca4ac] w-20" onClick={onClose}>
-            Назад
-          </Button>
+          {/* Display service domain */}
+          <div className="mb-4">
+            <strong>Service Domain: </strong>
+            <span>{data?.service?.domain}</span>
+          </div>
+
+          {/* Display agent status */}
+          <div className="mb-4">
+            <strong>Agent Status: </strong>
+            <span>{data?.agent?.status}</span>
+          </div>
+
+          {/* Display creation date */}
+          <div className="mb-4">
+            <strong>Created At: </strong>
+            <span>{data?.createdAt}</span>
+          </div>
+
+          {history || history?.length !== 0 ? (
+            <div className="">
+              <h3 className="font-semibold text-xl">Терминал</h3>
+              <div className="bg-gray-900 text-white p-4 h-[350px] rounded-md font-mono text-sm overflow-auto whitespace-nowrap overflow-x-auto">
+              {history ? (
+                <div className="mb-4">
+                {history.slice(0, currentIndex + 1).map((entry, index) => (
+                  <div key={index} className="mb-4">
+                    <div className="flex">
+                      <span className="text-gray-400 pr-[4px]">{"> "}</span>
+                      <TypingAnimation 
+                        text={" " + entry.command} 
+                        duration={10} 
+                        className="text-sm whitespace-nowrap"
+                        onComplete={() => {
+                          console.log("Typing complete!");
+                          setCurrentIndex((prevIndex) => prevIndex + 1); // Переход к следующему элементу
+                        }}
+                      />
+                    </div>
+            
+                    {/* Output будет показываться только после завершения печати команды */}
+                    {currentIndex > index && (
+                      <div className="mt-2 flex whitespace-nowrap overflow-x-auto">
+                        <span className="text-gray-400 pr-[4px]">{"bash: "}</span>
+                        {" " + entry.output}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              ) : (
+                <div className="mb-4">Loading history...</div>
+              )}
+
+
+              </div>
+            </div>
+          ) : (
+            <>
+            <h3 className="font-semibold text-xl">Терминал</h3>
+            <div className="bg-gray-900 text-white p-4 h-[350px] rounded-md font-mono text-sm overflow-auto whitespace-nowrap overflow-x-auto">
+              <span className="text-gray-400 pr-[4px]">{"> "}</span>
+            </div>
+            </>
+
+          )}
+
+
+          <div className="flex justify-end space-x-2 mt-2">
+            <Button className="w-full bg-gray-400 hover:bg-[#9ca4ac] w-20" onClick={onClose}>
+              Назад
+            </Button>
+          </div>
         </div>
       </motion.div>
     </div>

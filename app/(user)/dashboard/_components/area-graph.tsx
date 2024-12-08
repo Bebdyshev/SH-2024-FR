@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from "react";
 import { TrendingUp } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
@@ -17,33 +18,80 @@ import {
   ChartTooltip,
   ChartTooltipContent
 } from '@/components/ui/chart';
-const chartData = [
-  { month: 'January', desktop: 186, mobile: 80 },
-  { month: 'February', desktop: 305, mobile: 200 },
-  { month: 'March', desktop: 237, mobile: 120 },
-  { month: 'April', desktop: 73, mobile: 190 },
-  { month: 'May', desktop: 209, mobile: 130 },
-  { month: 'June', desktop: 214, mobile: 140 }
-];
+import axiosInstance from "@/app/axios/instance";
 
 const chartConfig = {
-  desktop: {
-    label: 'Desktop',
-    color: 'hsl(var(--chart-1))'
+  potential: {
+    label: 'Potential',
+    color: '#ff5500'
   },
-  mobile: {
-    label: 'Mobile',
-    color: 'hsl(var(--chart-2))'
+  real: {
+    label: 'Real',
+    color: '#5754de'
+  },
+  noVulnerabilities: {
+    label: 'No Vulnerabilities',
+    color: 'green'
   }
 } satisfies ChartConfig;
 
+// Define the type for chart data
+interface ChartData {
+  hour: string;
+  potential: number;
+  real: number;
+  noVulnerabilities: number;
+}
+
 export function AreaGraph() {
+  const [chartData, setChartData] = useState<ChartData[]>([]); // Explicitly define the state type
+  const [vulnerabilityCount, setVulnerabilityCount] = useState({
+    allVulnCount: 0,
+    potentialVulnCount: 0,
+    realVulnCount: 0,
+    noVulnCount: 0,
+  });
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axiosInstance.get('/user/vulnerabilities/count');
+        const responseData = response.data; // Assuming this is the format
+        const { allVulnCount, potentialVulnCount, realVulnCount, noVulnCount } = responseData;
+
+        // Create random distribution across 24 hours of the day
+        const randomData: ChartData[] = []; // Ensure type is ChartData[]
+        for (let i = 0; i < 24; i++) {
+          randomData.push({
+            hour: `${i}:00`,
+            potential: Math.floor(potentialVulnCount),
+            real: Math.floor(realVulnCount),
+            noVulnerabilities: Math.floor(noVulnCount)
+          });
+        }
+
+        setChartData(randomData);
+
+        setVulnerabilityCount({
+          allVulnCount,
+          potentialVulnCount,
+          realVulnCount,
+          noVulnCount
+        });
+      } catch (error) {
+        console.error("Ошибка при загрузке данных:", error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Сравнительный график</CardTitle>
         <CardDescription>
-          Все уязвимости за последние 7 дней
+          Сравнение типов уязвимостей за последние 24 часа
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -61,30 +109,38 @@ export function AreaGraph() {
           >
             <CartesianGrid vertical={false} />
             <XAxis
-              dataKey="month"
+              dataKey="hour"
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(0, 3)}
+              tickFormatter={(value) => value.slice(0, 5)}
             />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="dot" />}
             />
             <Area
-              dataKey="mobile"
+              dataKey="potential"
               type="natural"
-              fill="#5754de"
+              fill={chartConfig.potential.color}
               fillOpacity={0.4}
-              stroke="#5754de"
+              stroke={chartConfig.potential.color}
               stackId="a"
             />
             <Area
-              dataKey="desktop"
+              dataKey="real"
               type="natural"
-              fill="#ff5500"
+              fill={chartConfig.real.color}
               fillOpacity={0.4}
-              stroke="#ff5500"
+              stroke={chartConfig.real.color}
+              stackId="a"
+            />
+            <Area
+              dataKey="noVulnerabilities"
+              type="natural"
+              fill={chartConfig.noVulnerabilities.color}
+              fillOpacity={0.4}
+              stroke={chartConfig.noVulnerabilities.color}
               stackId="a"
             />
           </AreaChart>
@@ -93,11 +149,8 @@ export function AreaGraph() {
       <CardFooter>
         <div className="flex w-full items-start gap-2 text-sm">
           <div className="grid gap-2">
-            <div className="flex items-center gap-2 font-medium leading-none">
-              Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-            </div>
             <div className="flex items-center gap-2 leading-none text-muted-foreground">
-                  Уязвимости за {`${new Date(new Date() - 5 * 24 * 60 * 60 * 1000).getDate()}-${new Date().getDate()} декабря, ${new Date().getFullYear()}`}
+              Уязвимости за последние 24 часа
             </div>
           </div>
         </div>
