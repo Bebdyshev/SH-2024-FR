@@ -1,22 +1,16 @@
-import React from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import type React from "react"
+import { Sidebar } from "./sidebar"
 
-export default function PageContainer({
-  children,
-  scrollable = true
-}: {
-  children: React.ReactNode;
-  scrollable?: boolean;
-}) {
+interface PageContainerProps {
+  children: React.ReactNode
+  scrollable?: boolean
+}
+
+export default function PageContainer({ children, scrollable = false }: PageContainerProps) {
   return (
-    <>
-      {scrollable ? (
-        <ScrollArea className="h-[calc(100dvh-52px)]">
-          <div className="h-full  p-4 md:px-8 gridBackground">{children}</div>
-        </ScrollArea>
-      ) : (
-        <div className="h-full  p-4 md:px-8 gridBackground">{children}</div>
-      )}
-    </>
-  );
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
+      <main className={`flex-1 p-6 ${scrollable ? "overflow-auto" : ""}`}>{children}</main>
+    </div>
+  )
 }

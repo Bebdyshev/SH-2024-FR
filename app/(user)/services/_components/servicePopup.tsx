@@ -1,140 +1,155 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
-import { TypingAnimation } from '@/components/ui/typing-animation';
+"use client"
+import { X } from "lucide-react"
+import { useState } from "react"
+import axiosInstance from "@/app/axios/instance"
+import { Button } from "@/components/ui/button"
 
 interface ServicePopupProps {
-  data: any; // Assuming 'data' will be an object containing the report's details
-  onClose: () => void;
+  data: any
+  onClose: () => void
 }
 
-export const ServicePopup: React.FC<ServicePopupProps> = ({ data, onClose }) => {
-  const [history, setHistory] = useState<any>(null); // State to store the report history
-  const [currentIndex, setCurrentIndex] = useState<number>(0); // Track current entry being typed
-  const reportId = data?.id; // Assuming the reportId is available in the 'data' prop
-  
-  useEffect(() => {
-    // Fetch the history data when the component mounts
-    const fetchReportHistory = async () => {
-      try {
-        const response = await fetch(`http://20.64.237.199:4000/user/reports/${reportId}/history`);
-        if (response.ok) {
-          const historyData = await response.json();
-          setHistory(historyData); // Store the fetched history data
-        } else {
-          console.error('Failed to fetch report history');
-        }
-      } catch (error) {
-        console.error('Error fetching report history:', error);
-      }
-    };
+export function ServicePopup({ data, onClose }: ServicePopupProps) {
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analysisResult, setAnalysisResult] = useState("")
 
-    if (reportId) {
-      fetchReportHistory();
+  const analyzeService = async () => {
+    try {
+      setAnalyzing(true)
+      const response = await axiosInstance.post("/services/analyze-service", {
+        service_id: data.id,
+        description:
+          data.service?.description || `Service with domain ${data.service?.domain} and IP ${data.service?.ip}`,
+      })
+      setAnalysisResult(response.data.message || "Analysis complete")
+    } catch (error) {
+      console.error("Error analyzing service:", error)
+      setAnalysisResult("Analysis failed. Please try again.")
+    } finally {
+      setAnalyzing(false)
     }
-  }, [reportId]); // Only refetch if reportId changes
+  }
 
-  console.log(history);
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active":
+        return "text-green-600"
+      case "processing":
+        return "text-blue-600"
+      case "vulnerable":
+        return "text-red-600"
+      default:
+        return "text-gray-600"
+    }
+  }
+
+  const getVerdictColor = (verdict: string) => {
+    if (verdict === "potential vulnerability") return "text-orange-600"
+    if (verdict === "processing...") return "text-blue-600"
+    return "text-green-600"
+  }
 
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40"
-      style={{ backdropFilter: 'blur(2px)' }}
-      onClick={onClose}
-    >
-      <motion.div
-        className="bg-white rounded-lg w-[50%] h-[80%] flex flex-col"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.05 }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6 flex flex-col">
-          <h2 className="text-xl font-bold mb-4">{data?.exploit?.title}</h2>
-          
-          {/* Display the verdict */}
-          <div className="mb-4">
-            <strong>Вердикт: </strong>
-            <span>{data?.verdict}</span>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white w-11/12 max-w-3xl rounded-lg shadow-xl overflow-hidden">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h2 className="text-xl font-bold">Service Details</h2>
+          <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100 transition-colors">
+            <X className="h-6 w-6" />
+          </button>
+        </div>
 
-          {/* Display service domain */}
-          <div className="mb-4">
-            <strong>Домен сервиса: </strong>
-            <span>{data?.service?.domain}</span>
-          </div>
-
-          {/* Display agent status */}
-          <div className="mb-4">
-            <strong>Статус агента: </strong>
-            <span>{data?.agent?.status}</span>
-          </div>
-
-          {/* Display creation date */}
-          <div className="mb-4">
-            <strong>Время создания: </strong>
-            <span>{data?.createdAt}</span>
-          </div>
-
-          {history || history?.length !== 0 ? (
-            <div className="">
-              <h3 className="font-semibold text-xl">Терминал</h3>
-              <div className="bg-gray-900 text-white p-4 h-[350px] rounded-md font-mono text-sm overflow-auto whitespace-nowrap overflow-x-auto">
-              {history ? (
-                <div className="mb-4">
-                {history.slice(0, currentIndex + 1).map((entry, index) => (
-                  <div key={index} className="mb-4">
-                    <div className="flex">
-                      <span className="text-gray-400 pr-[4px]">{"> "}</span>
-                      <TypingAnimation 
-                        text={" " + entry.command} 
-                        duration={10} 
-                        className="text-sm whitespace-nowrap"
-                        onComplete={() => {
-                          console.log("Typing complete!");
-                          setCurrentIndex((prevIndex) => prevIndex + 1); // Переход к следующему элементу
-                        }}
-                      />
-                    </div>
-            
-                    {/* Output будет показываться только после завершения печати команды */}
-                    {currentIndex > index && (
-                      <div className="mt-2 flex whitespace-nowrap overflow-x-auto">
-                        <span className="text-gray-400 pr-[4px]">{"bash: "}</span>
-                        {" " + entry.output}
-                      </div>
-                    )}
-                  </div>
-                ))}
+        <div className="p-6 max-h-[70vh] overflow-y-auto">
+          {/* Service Information */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">Service Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Domain</p>
+                <p className="font-medium">{data.service.domain}</p>
               </div>
-              ) : (
-                <div className="mb-4">Loading history...</div>
-              )}
-
-
+              <div>
+                <p className="text-sm text-gray-500">IP Address</p>
+                <p className="font-medium">{data.service.ip}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Created</p>
+                <p className="font-medium">{formatDate(data.service.createdAt)}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Status</p>
+                <p className={`font-medium ${getStatusColor(data.agent.status)}`}>{data.agent.status}</p>
               </div>
             </div>
-          ) : (
-            <>
-            <h3 className="font-semibold text-xl">Терминал</h3>
-            <div className="bg-gray-900 text-white p-4 h-[350px] rounded-md font-mono text-sm overflow-auto whitespace-nowrap overflow-x-auto">
-              <span className="text-gray-400 pr-[4px]">{"> "}</span>
-            </div>
-            </>
+          </div>
 
+          {/* Exploit Information */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3">Exploit Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Exploit Title</p>
+                <p className="font-medium">{data.exploit.title}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Verdict</p>
+                <p className={`font-medium ${getVerdictColor(data.verdict)}`}>{data.verdict}</p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="text-sm text-gray-500">Description</p>
+                <p className="font-medium">{data.exploit.description || "No description available"}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Technical Details */}
+          {data.exploit.technical_details && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">Technical Details</h3>
+              <div className="bg-gray-50 p-4 rounded-md">
+                <pre className="whitespace-pre-wrap text-sm">{data.exploit.technical_details}</pre>
+              </div>
+            </div>
           )}
 
+          {/* Recommendations */}
+          {data.exploit.recommendations && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Recommendations</h3>
+              <div className="bg-blue-50 p-4 rounded-md">
+                <p className="text-sm">{data.exploit.recommendations}</p>
+              </div>
+            </div>
+          )}
+        </div>
 
-          <div className="flex justify-end space-x-2 mt-2">
-            <Button className="w-full bg-gray-400 hover:bg-[#9ca4ac] w-20" onClick={onClose}>
-              Назад
+        <div className="p-4 border-t flex justify-between">
+          <div>
+            {analysisResult && (
+              <p className={`text-sm ${analysisResult.includes("failed") ? "text-red-600" : "text-green-600"}`}>
+                {analysisResult}
+              </p>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={analyzeService} disabled={analyzing} className="bg-purple-600 hover:bg-purple-700">
+              {analyzing ? "Analyzing..." : "Analyze Service"}
+            </Button>
+            <Button onClick={onClose} variant="outline">
+              Close
             </Button>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
-  );
-};
+  )
+}
