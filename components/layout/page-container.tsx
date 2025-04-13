@@ -1,5 +1,5 @@
 import type React from "react"
-import { Sidebar } from "./sidebar"
+import { Sidebar } from "./app-sidebar"
 
 interface PageContainerProps {
   children: React.ReactNode
