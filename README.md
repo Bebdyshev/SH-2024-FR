@@ -1,5 +1,3 @@
-# Sec👮🏿lert - Security Hackathon by Terricon Valley
-
 ## Installation
 
 Frontend:
