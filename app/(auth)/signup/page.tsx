@@ -40,7 +40,7 @@ export default function SignupPage() {
 
       setSuccess("Account created successfully! Redirecting to login...")
       setTimeout(() => {
-        router.push("/auth/login")
+        router.push("/login")
       }, 2000)
     } catch (err: any) {
       setError(err.response?.data?.detail || "Registration failed. Please try again.")
@@ -120,7 +120,7 @@ export default function SignupPage() {
         <CardFooter className="flex justify-center">
           <div className="text-sm text-center text-gray-500">
             Already have an account?{" "}
-            <Link href="/auth/login" className="text-purple-600 hover:underline">
+            <Link href="/login" className="text-purple-600 hover:underline">
               Sign in
             </Link>
           </div>
